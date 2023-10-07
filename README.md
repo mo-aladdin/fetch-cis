@@ -19,14 +19,13 @@ Or
 1. Clone or download the repository to your local machine.
 2. Install the required dependencies mentioned in the prerequisites section.
 3. Generate a standard Netscape format `cookies.txt` file containing valid session cookies for the [CIS WorkBench website](https://workbench.cisecurity.org/). You can generate this file using the [ExportCookies](https://github.com/rotemdan/ExportCookies) browser plugin. Place the `cookies.txt` file in the same directory as the script.
-4. Get a `navtree.json` JSON file for the benchmarks you wish to download and place it in the same directory as the script.
-    - The file is requested by the browser when you visit a benchmarke page on cisworkbench.org. 
-    - For example, If you visit [Microsoft Azure Foundations Benchmark v1.5.0](https://workbench.cisecurity.org/benchmarks/8528) the page will make a request for a `navtree.json` at [https://workbench.cisecurity.org/api/v1/benchmarks/8528/navtree](https://workbench.cisecurity.org/api/v1/benchmarks/8528/navtree)
-    - Download the file and place it in the same directory as the script.
-5. Run the script using the command: `python fetch_cis_data.py output_file` where `output_file` is the file name to dump the output to. Ideally, this would hint to the cis name and version e.g. azure150.json
-6. The script will fetch the benchmark data and store it as a local JSON file in the same directory as the script `./output/{output_file}`.
+4. Get the benchmark ID for the benchmarks you wish to download, For example, For Microsoft Azure Foundations Benchmark v1.5.0 [https://workbench.cisecurity.org/benchmarks/8528](https://workbench.cisecurity.org/benchmarks/8528) the ID will be 8528.
+5. Run the script using the command: `python fetch_cis_data.py benchmark_id`
+6. The script will fetch the benchmark data and store it as a local JSON file in the directory `./output/{output_file}`.
 
 ## Code Explanation
+
+This section is outdated and might be inacurate.
 
 The script consists of the following main functions:
 
@@ -35,10 +34,6 @@ The script consists of the following main functions:
 2. `parse_json(json_data)`: Extracts specific data from the provided JSON representation of the CIS benchmark navigation tree. The function retrieves recommendation details such as ID, title, and URL, and adds them to a list of dictionaries.
 
 3. `fetch_webpage_data(data)`: Fetches additional data from the webpages of CIS benchmark recommendations. It loads the authentication cookies from the `cookies.txt` file, retrieves the HTML content of the recommendation webpage, and uses Beautiful Soup to parse the HTML and extract specific elements. The extracted data is added to the input dictionary and returned.
-
-4. The script reads the `navtree.json` file, parses its JSON content, and fetches the webpage data for the first recommendation. The resulting data is written to the `output.py` file.
-
-For more information, refer to the comments within the script.
 
 ## License
 

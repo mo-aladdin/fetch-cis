@@ -1,5 +1,6 @@
 import http.cookiejar
 import json
+import re
 from sys import argv, exit
 import os
 
@@ -7,11 +8,11 @@ import requests
 from bs4 import BeautifulSoup
 
 def fetch_data(url, session):
-    response = session.get(url)
+    response: requests.Response = session.get(url)
     if response.status_code == 200:
-        return response.text
+        return response
     else:
-        return None
+        response.raise_for_status()
 
 def parse_json(json_data):
     parsed_data = []
@@ -30,14 +31,11 @@ def parse_json(json_data):
             })
     return parsed_data
 
-def fetch_webpage_data(data: "dict"):
-    with requests.Session() as session:
-        # Load cookies from a cookies.txt file
-        cookie_jar = http.cookiejar.MozillaCookieJar()
-        cookie_jar.load("cookies.txt")
-        session.cookies = cookie_jar  
+def fetch_webpage_data(data: "dict", session: requests.Session):
+    with session:
         url = data['url']
-        html = fetch_data(url, session)
+        print(f"Fetching {url}")
+        html = fetch_data(url, session).text
         if html:
             # Parse HTML and extract inner HTML of specific elements
             parsed_html = data.copy()
@@ -65,25 +63,38 @@ def fetch_webpage_data(data: "dict"):
 
 if __name__ == "__main__":
     if len(argv) != 2:
-        print("Please provide a file name for the output file e.g. 'python fetch.py azure_150'")
+        print("Please provide a benchmark ID e.g. 'python fetch.py 6622'")
         exit(2)
-    else:
-        save_path = f"./output/{argv[1]}.json"
-        if os.path.exists(save_path):
-            print(f"Output path {save_path} already exists. Process terminated to avoid overwriting the file. To continue, Specify a different name, move, or delete the file.")
-            exit(1)
-    
-    # Load JSON data from file
-    with open('./navtree.json') as json_file:
-        json_data = json.load(json_file)
-        
+
+    # Create session and load cookies from a cookies.txt file
+    cookie_jar = http.cookiejar.MozillaCookieJar()
+    cookie_jar.load("cookies.txt")
+    session = requests.Session()
+    session.cookies = cookie_jar
+
+    # retrieve benchmark name and navtree
+    benchmark_id = argv[1]
+    url = f"https://workbench.cisecurity.org/benchmarks/{benchmark_id}"
+    print(f"Fetching benchmark title for {benchmark_id}")
+    html = fetch_data(url, session).text
+    soup = BeautifulSoup(html, 'html.parser')
+    title = soup.find(name='wb-benchmark-title').get("title")
+    save_path = "".join([c for c in title.replace(" ", "_") if re.match(r'\w', c)])
+    if os.path.exists(save_path):
+        print(f"Output path {save_path} already exists. Process terminated to avoid overwriting the file. To continue, Specify a different name, move, or delete the file.")
+        exit(1)
+
+    # Load JSON navtree data
+    print(f"Fetching navtree data for {title}")
+    url = f"https://workbench.cisecurity.org/api/v1/benchmarks/{benchmark_id}/navtree"
+    json_data = fetch_data(url, session).json()
     # Parse JSON and fetch web page data
     parsed_data: "list[dict]" = parse_json(json_data)
-
     output = []
     for datum in parsed_data:
-        output.append(fetch_webpage_data(datum))
+        output.append(fetch_webpage_data(datum), cookie_jar)
 
     # save results
+    print(f"Saving results to {save_path}")
     with open(save_path, "w") as f:
         json.dump(output, f)
