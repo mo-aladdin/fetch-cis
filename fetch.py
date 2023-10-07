@@ -92,7 +92,7 @@ if __name__ == "__main__":
     parsed_data: "list[dict]" = parse_json(json_data)
     output = []
     for datum in parsed_data:
-        output.append(fetch_webpage_data(datum), cookie_jar)
+        output.append(fetch_webpage_data(datum, session))
 
     # save results
     print(f"Saving results to {save_path}")
