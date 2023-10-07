@@ -63,7 +63,7 @@ def fetch_webpage_data(data: "dict", session: requests.Session):
 
 if __name__ == "__main__":
     if len(argv) != 2:
-        print("Please provide a benchmark ID e.g. 'python fetch.py 6622'")
+        print("Please provide a benchmark url e.g. 'python fetch.py https://workbench.cisecurity.org/benchmarks/{benchmark_id}'")
         exit(2)
 
     # Create session and load cookies from a cookies.txt file
@@ -73,8 +73,8 @@ if __name__ == "__main__":
     session.cookies = cookie_jar
 
     # retrieve benchmark name and navtree
-    benchmark_id = argv[1]
-    url = f"https://workbench.cisecurity.org/benchmarks/{benchmark_id}"
+    url =  argv[1]
+    benchmark_id = re.search(r'\d+/*$', url).group().replace("/", "")
     print(f"Fetching benchmark title for {benchmark_id}")
     html = fetch_data(url, session).text
     soup = BeautifulSoup(html, 'html.parser')
