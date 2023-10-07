@@ -18,13 +18,13 @@ Or
 
 1. Clone or download the repository to your local machine.
 2. Install the required dependencies mentioned in the prerequisites section.
-3. Generate a standard Netscape format `cookies.txt` file containing valid session cookies for the [CIS WorkBench website](https://workbench.cisecurity.org/). This file contains the necessary authentication cookies to access the benchmark data. Save the `cookies.txt` file in the same directory as the script.
+3. Generate a standard Netscape format `cookies.txt` file containing valid session cookies for the [CIS WorkBench website](https://workbench.cisecurity.org/). You can generate this file using the [ExportCookies](https://github.com/rotemdan/ExportCookies) browser plugin. Place the `cookies.txt` file in the same directory as the script.
 4. Get a `navtree.json` JSON file for the benchmarks you wish to download and place it in the same directory as the script.
     - The file is requested by the browser when you visit a benchmarke page on cisworkbench.org. 
     - For example, If you visit [Microsoft Azure Foundations Benchmark v1.5.0](https://workbench.cisecurity.org/benchmarks/8528) the page will make a request for a `navtree.json` at [https://workbench.cisecurity.org/api/v1/benchmarks/8528/navtree](https://workbench.cisecurity.org/api/v1/benchmarks/8528/navtree)
     - Download the file and place it in the same directory as the script.
-5. Run the script using the command: `python fetch_cis_data.py`
-6. The script will fetch the benchmark data and store it as a local JSON file in the same directory as the script `./output/{cis_version}`.
+5. Run the script using the command: `python fetch_cis_data.py output_file` where `output_file` is the file name to dump the output to. Ideally, this would hint to the cis name and version e.g. azure150.json
+6. The script will fetch the benchmark data and store it as a local JSON file in the same directory as the script `./output/{output_file}`.
 
 ## Code Explanation
 

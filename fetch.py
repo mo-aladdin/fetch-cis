@@ -1,6 +1,9 @@
-import requests
-import json
 import http.cookiejar
+import json
+from sys import argv, exit
+import os
+
+import requests
 from bs4 import BeautifulSoup
 
 def fetch_data(url, session):
@@ -39,36 +42,48 @@ def fetch_webpage_data(data: "dict"):
             # Parse HTML and extract inner HTML of specific elements
             parsed_html = data.copy()
             soup = BeautifulSoup(html, 'html.parser')
-            element_ids = [
-                "automated_scoring-recomendtation-data",
-                "description-recomendtation-data",
-                "rationale_statement-recomendtation-data",
-                "impact_statement-recomendtation-data",
-                "audit_procedure-recomendtation-data",
-                "remediation_procedure-recomendtation-data",
-                "default_value-recomendtation-data",
-                "artifact_equation-recomendtation-data",
-                "mitre_mappings-recomendtation-data",
-                "references-recomendtation-data"
-            ]
-            for element_id in element_ids:
+            key_elementId_mapping = {
+                "assessment": "automated_scoring-recomendtation-data",
+                "description": "description-recomendtation-data",
+                "rationale": "rationale_statement-recomendtation-data",
+                "impact": "impact_statement-recomendtation-data",
+                "audit": "audit_procedure-recomendtation-data",
+                "remediation": "remediation_procedure-recomendtation-data",
+                "default_value": "default_value-recomendtation-data",
+                "artifact_eq": "artifact_equation-recomendtation-data",
+                "mitre_mapping": "mitre_mappings-recomendtation-data",
+                "references": "references-recomendtation-data"
+            }
+            for key, element_id in key_elementId_mapping.items():
                 element = soup.find(id=element_id)
                 if element is not None:
-                    parsed_html[element_id] = element.decode_contents().strip()
+                    parsed_html[key] = element.decode_contents().strip()
                 else:
-                    raise ValueError(f"None element {element_id} for {url}")
-            
+                    raise ValueError(f"Response for {url} missing the element #{element_id}. Make sure session cookies are still valid.")
             return parsed_html
 
-# Load JSON data from file
-with open('./navtree.json') as json_file:
-    json_data = json.load(json_file)
+
+if __name__ == "__main__":
+    if len(argv) != 2:
+        print("Please provide a file name for the output file e.g. 'python fetch.py azure_150'")
+        exit(2)
+    else:
+        save_path = f"./output/{argv[1]}.json"
+        if os.path.exists(save_path):
+            print(f"Output path {save_path} already exists. Process terminated to avoid overwriting the file. To continue, Specify a different name, move, or delete the file.")
+            exit(1)
     
-# Parse JSON and fetch web page data
-parsed_data: "list[dict]" = parse_json(json_data)
+    # Load JSON data from file
+    with open('./navtree.json') as json_file:
+        json_data = json.load(json_file)
+        
+    # Parse JSON and fetch web page data
+    parsed_data: "list[dict]" = parse_json(json_data)
 
-output = fetch_webpage_data(parsed_data[0])
+    output = []
+    for datum in parsed_data:
+        output.append(fetch_webpage_data(datum))
 
-# Print the final dictionary
-with open("output.py", "w") as f:
-    f.write(str(output))
+    # save results
+    with open(save_path, "w") as f:
+        json.dump(output, f)
