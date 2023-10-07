@@ -79,7 +79,7 @@ if __name__ == "__main__":
     html = fetch_data(url, session).text
     soup = BeautifulSoup(html, 'html.parser')
     title = soup.find(name='wb-benchmark-title').get("title")
-    safename = "".join([c for c in title.replace(" ", "_") if re.match(r'\w', c)])
+    safename = "".join([c for c in title.replace(" ", "_") if re.match(r'\w', c)]).lower()
     save_path = f"./output/{safename}.json"
     if os.path.exists(save_path):
         print(f"Output path {save_path} already exists. Process terminated to avoid overwriting the file. To continue, Specify a different name, move, or delete the file.")
